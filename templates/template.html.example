@@ -1,0 +1,42 @@
+---
+subject: "Rapport {{ ProjectName }} - Date: {{ ReportDate | type:'date' }}"
+---
+<html>
+    <head>
+        <style>
+            body { font-family: sans-serif; color: #333; }
+            .header { border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px; }
+            .highlight { color: #0056b3; font-weight: bold; }
+            .footer { margin-top: 30px; font-size: 0.8em; color: #777; border-top: 1px solid #ddd; padding-top: 10px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h2>Mise à jour du projet : {{ ProjectName }}</h2>
+        </div>
+
+        <p>Bonjour,</p>
+
+        <p>Voici le rapport d'avancement pour la date du <span class="highlight">{{ ReportDate }}</span>.</p>
+
+        <h3>Métriques Clés</h3>
+        <ul>
+            <li>Tâches complétées : {{ CompletedTasks | int }}</li>
+            <li>Bugs résolus : {{ BugCount | int }}</li>
+            {% if BugCount|int > 5 %}
+            <li style="color: red;">⚠️ Attention : Nombre élevé de bugs cette semaine !</li>
+            {% endif %}
+        </ul>
+
+        <h3>Détails</h3>
+        <p>Le fichier détaillé se trouve ici : <br>
+        <code>{{ ReportPath | type:'filepath' }}</code></p>
+
+        <p>Cordialement,<br>
+        <strong>{{ SenderName }}</strong></p>
+
+        <div class="footer">
+            <p>Ce message a été généré automatiquement. Merci de ne pas répondre.</p>
+        </div>
+    </body>
+</html>
