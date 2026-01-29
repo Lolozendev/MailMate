@@ -46,9 +46,16 @@ bcc: "archive@example.com"
 
 ### Champs Disponibles
 
-- **`to`** : Destinataire principal
-- **`cc`** : Copie (Carbon Copy)
-- **`bcc`** : Copie cachée (Blind Carbon Copy)
+- **`to`** : Destinataire(s) principal(aux)
+- **`cc`** : Copie(s) (Carbon Copy)
+- **`bcc`** : Copie(s) cachée(s) (Blind Carbon Copy)
+
+**Support multi-destinataires** : Séparez les adresses email avec des **points-virgules** (`;`) ou des **virgules** (`,`)
+
+```yaml
+to: "email1@example.com; email2@example.com; email3@example.com"
+cc: "manager@example.com, team@example.com"
+```
 
 ### Avantages
 
@@ -67,6 +74,7 @@ Si vous définissez `to: "client@example.com"` dans le template mais utilisez `-
 
 ### Exemple Complet
 
+**Exemple simple :**
 ```html
 ---
 subject: "Relance facture {{ InvoiceNumber }}"
@@ -81,10 +89,26 @@ cc: "comptabilite@example.com"
 </html>
 ```
 
+**Exemple avec plusieurs destinataires :**
+```html
+---
+subject: "Réunion {{ MeetingDate | type:'date' }}"
+to: "{{ Attendee1Email }}; {{ Attendee2Email }}; {{ Attendee3Email }}"
+cc: "manager@example.com, assistant@example.com"
+bcc: "archive@example.com"
+---
+<html>
+<body>
+    <p>Bonjour à tous,</p>
+    <p>Rappel de la réunion du {{ MeetingDate }}.</p>
+</body>
+</html>
+```
+
 Lors de l'utilisation :
-- Le formulaire demandera `ContactEmail`, `ContactName`, `InvoiceNumber`
-- Le destinataire principal sera automatiquement `{{ ContactEmail }}`
-- Une copie sera toujours envoyée à `comptabilite@example.com`
+- Le formulaire demandera les variables nécessaires
+- Les destinataires peuvent être multiples (séparés par `;` ou `,`)
+- Les variables et les adresses fixes peuvent être combinées
 
 ## 📝 Syntaxe des Variables
 
