@@ -26,9 +26,26 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 	}
 
 	// 2. Select template
-	selected, err := tui.SelectTemplate(tmpls)
-	if err != nil {
-		return fmt.Errorf("selecting template: %w", err)
+	var selected *models.TemplateRef
+	if options.Template != "" {
+		// CLI template selection: find matching template by path
+		found := false
+		for i := range tmpls {
+			if tmpls[i].Path == options.Template {
+				selected = &tmpls[i]
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("template not found: %s", options.Template)
+		}
+	} else {
+		// TUI template selection
+		selected, err = tui.SelectTemplate(tmpls)
+		if err != nil {
+			return fmt.Errorf("selecting template: %w", err)
+		}
 	}
 
 	// 3. Parse variables
