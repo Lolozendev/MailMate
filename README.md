@@ -15,6 +15,8 @@ MailMate simplifie la création d'emails répétitifs. Sélectionnez un modèle,
 
 ## 🚀 Utilisation Rapide
 
+### Mode Interactif (TUI)
+
 1.  **Lancez l'application** :
     ```powershell
     go run ./cmd/mailmate/main.go
@@ -22,6 +24,23 @@ MailMate simplifie la création d'emails répétitifs. Sélectionnez un modèle,
 2.  **Sélectionnez un template** dans la liste.
 3.  **Remplissez le formulaire** qui s'affiche.
 4.  **Validez** : Outlook s'ouvre avec votre email prêt à partir !
+
+### Mode Ligne de Commande (--kv)
+
+Pour automatiser ou scripter la génération, utilisez le flag `--kv` :
+
+```powershell
+# Exemple avec plusieurs variables
+./mailmate --template templates/invitation.html --kv "Name='John Doe';Date='25-01-2026';Count=5"
+
+# Avec destinataires
+./mailmate --template templates/relance.html --kv "ContactName='Marie';InvoiceNumber=12345;Date='20-01-2026'" --to "marie@example.com"
+```
+
+**Format** : `key1='value';key2='value2';key3=0`
+- Séparez les paires par des points-virgules (`;`)
+- Utilisez des guillemets simples ou doubles pour les valeurs avec espaces
+- Les validations de type (int, date, filepath) s'appliquent automatiquement
 
 ## 📝 Créer vos Templates
 
