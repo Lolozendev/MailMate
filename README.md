@@ -62,6 +62,36 @@ subject: Relance facture {{ InvoiceNumber }}
 
 👉 **[Guide complet pour créer des templates](./templates/README.md)** (Syntaxe, variables, filtres...)
 
+## 🔧 Configuration
+
+### Dossier des Templates
+
+Par défaut, MailMate cherche les templates dans le dossier `templates/` du répertoire courant.
+
+Pour définir un emplacement personnalisé **de façon permanente**, utilisez la variable d'environnement `MAILMATE_TEMPLATES_DIR` :
+
+**Windows PowerShell (permanent pour l'utilisateur)** :
+```powershell
+[System.Environment]::SetEnvironmentVariable('MAILMATE_TEMPLATES_DIR', 'C:\MesTemplates', 'User')
+```
+
+**Windows PowerShell (session courante uniquement)** :
+```powershell
+$env:MAILMATE_TEMPLATES_DIR = "C:\MesTemplates"
+```
+
+**Linux/macOS (permanent dans ~/.bashrc ou ~/.zshrc)** :
+```bash
+export MAILMATE_TEMPLATES_DIR="/home/user/mes-templates"
+```
+
+**Linux/macOS (session courante uniquement)** :
+```bash
+export MAILMATE_TEMPLATES_DIR="/home/user/mes-templates"
+```
+
+Une fois configurée, l'application utilisera automatiquement ce dossier sans configuration supplémentaire.
+
 ## ⚙️ Installation & Pré-requis
 
 *   **OS** : Windows uniquement (dépendance à Outlook Desktop).
