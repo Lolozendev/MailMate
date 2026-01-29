@@ -105,9 +105,49 @@ func RenderTemplate(tmplPath string, variables map[string]string) (*models.Rende
 		return nil, fmt.Errorf("failed to render template subject for %q: %w", tmplPath, err)
 	}
 
+	// 3. Render the recipients (To, Cc, Bcc)
+	// These might also contain variables.
+	var toOut, ccOut, bccOut string
+
+	if parsed.To != "" {
+		toTpl, err := pongo2.FromString(parsed.To)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse template 'to' field for %q: %w", tmplPath, err)
+		}
+		toOut, err = toTpl.Execute(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to render template 'to' field for %q: %w", tmplPath, err)
+		}
+	}
+
+	if parsed.Cc != "" {
+		ccTpl, err := pongo2.FromString(parsed.Cc)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse template 'cc' field for %q: %w", tmplPath, err)
+		}
+		ccOut, err = ccTpl.Execute(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to render template 'cc' field for %q: %w", tmplPath, err)
+		}
+	}
+
+	if parsed.Bcc != "" {
+		bccTpl, err := pongo2.FromString(parsed.Bcc)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse template 'bcc' field for %q: %w", tmplPath, err)
+		}
+		bccOut, err = bccTpl.Execute(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to render template 'bcc' field for %q: %w", tmplPath, err)
+		}
+	}
+
 	return &models.RenderedTemplate{
 		Subject: subjectOut,
 		HTML:    bodyOut,
+		To:      toOut,
+		Cc:      ccOut,
+		Bcc:     bccOut,
 	}, nil
 }
 
