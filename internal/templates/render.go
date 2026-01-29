@@ -2,10 +2,9 @@ package templates
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
-	"mailmate/internal/app"
+	"mailmate/internal/models"
+	"mailmate/internal/validator"
 
 	"github.com/flosch/pongo2/v6"
 )
@@ -29,20 +28,17 @@ func filterType(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.E
 
 	switch typ {
 	case "date":
-		// For the TUI form, we just pass through the value as a string.
-		// Validation happens during form input collection.
-		// This filter is mainly a marker for the form generator.
-		return pongo2.AsValue(val), nil
-	case "filepath":
-		// Similar to date, this is a marker for the form generator.
-		// Basic validation could be added here if needed during rendering.
-		if strings.TrimSpace(val) == "" {
-			return nil, &pongo2.Error{
-				Sender:    "filter:type",
-				OrigError: fmt.Errorf("filepath cannot be empty"),
-			}
+		// Check validity but return string as is for template
+		if _, err := validator.ValidateDate(val); err != nil {
+			return nil, &pongo2.Error{Sender: "filter:type", OrigError: err}
 		}
 		return pongo2.AsValue(val), nil
+	case "filepath":
+		if _, err := validator.ValidateFilepath(val); err != nil {
+			return nil, &pongo2.Error{Sender: "filter:type", OrigError: err}
+		}
+		// For display purposes in the email body, we only want the filename, not the full path.
+		return pongo2.AsValue(validator.GetFilename(val)), nil
 	default:
 		return nil, &pongo2.Error{
 			Sender:    "filter:type",
@@ -53,16 +49,12 @@ func filterType(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.E
 
 // filterInt implements the "int" filter which ensures the value is an integer.
 func filterInt(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
-	// Attempt to convert to integer.
-	// If it's already an integer/number, pongo2 handles it.
-	// If it's a string representation of a number, we try to convert.
-	// Since in.Integer() doesn't return an error, we do manual conversion for strictness.
 	s := in.String()
-	i, err := strconv.Atoi(s)
+	i, err := validator.ValidateInt(s)
 	if err != nil {
 		return nil, &pongo2.Error{
 			Sender:    "filter:int",
-			OrigError: fmt.Errorf("value is not an integer: %v", s),
+			OrigError: err,
 		}
 	}
 	return pongo2.AsValue(i), nil
@@ -76,7 +68,7 @@ func passthroughFilter(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *p
 }
 
 // RenderTemplate renders the template at the given path using the provided variables.
-func RenderTemplate(tmplPath string, variables map[string]string) (*app.RenderedTemplate, error) {
+func RenderTemplate(tmplPath string, variables map[string]string) (*models.RenderedTemplate, error) {
 	// Parse the template file to separate frontmatter (subject) and body.
 	parsed, err := ParseTemplateFile(tmplPath)
 	if err != nil {
@@ -113,7 +105,7 @@ func RenderTemplate(tmplPath string, variables map[string]string) (*app.Rendered
 		return nil, fmt.Errorf("failed to render template subject for %q: %w", tmplPath, err)
 	}
 
-	return &app.RenderedTemplate{
+	return &models.RenderedTemplate{
 		Subject: subjectOut,
 		HTML:    bodyOut,
 	}, nil

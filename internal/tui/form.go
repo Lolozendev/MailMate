@@ -2,20 +2,19 @@ package tui
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/huh"
 
-	"mailmate/internal/app"
+	"mailmate/internal/models"
+	"mailmate/internal/validator"
 )
 
 // CollectUserInput prompts the user for any variables defined in the selected template.
-func CollectUserInput(variables []app.TemplateVariable) (*app.UserInput, error) {
+func CollectUserInput(variables []models.TemplateVariable) (*models.UserInput, error) {
 	// If there are no variables, return empty input immediately
 	if len(variables) == 0 {
-		return &app.UserInput{
+		return &models.UserInput{
 			Values: make(map[string]string),
 		}, nil
 	}
@@ -57,13 +56,13 @@ func CollectUserInput(variables []app.TemplateVariable) (*app.UserInput, error) 
 		finalValues[name] = *ptr
 	}
 
-	return &app.UserInput{
+	return &models.UserInput{
 		Values: finalValues,
 	}, nil
 }
 
 // createValidator returns a validation function based on the provided filters.
-func createValidator(filters []app.TemplateFilter) func(string) error {
+func createValidator(filters []models.TemplateFilter) func(string) error {
 	return func(str string) error {
 		// Required check (variables are implicitly required for now unless we add an optional filter later)
 		if strings.TrimSpace(str) == "" {
@@ -73,15 +72,19 @@ func createValidator(filters []app.TemplateFilter) func(string) error {
 		for _, f := range filters {
 			switch f.Name {
 			case "int":
-				if _, err := strconv.Atoi(str); err != nil {
+				if _, err := validator.ValidateInt(str); err != nil {
 					return fmt.Errorf("must be an integer")
 				}
 			case "type":
-				if f.Arg == "date" {
+				switch f.Arg {
+				case "date":
 					// validate YYYY-MM-DD
-					// TODO : make this a switch case for easier adding of future types
-					if _, err := time.Parse("02-01-2006", str); err != nil {
+					if _, err := validator.ValidateDate(str); err != nil {
 						return fmt.Errorf("must be a date (DD-MM-YYYY)")
+					}
+				case "filepath":
+					if err := validator.ValidateFileExists(str); err != nil {
+						return fmt.Errorf("file does not exist")
 					}
 				}
 			}
@@ -92,10 +95,15 @@ func createValidator(filters []app.TemplateFilter) func(string) error {
 
 // getHint returns a placeholder string based on filters
 // TODO : make this a switch case for easier adding of future types
-func getHint(filters []app.TemplateFilter) string {
+func getHint(filters []models.TemplateFilter) string {
 	for _, f := range filters {
-		if f.Name == "type" && f.Arg == "date" {
-			return "DD-MM-YYYY"
+		if f.Name == "type" {
+			switch f.Arg {
+			case "date":
+				return "DD-MM-YYYY"
+			case "filepath":
+				return "/path/to/file"
+			}
 		}
 	}
 	return ""
