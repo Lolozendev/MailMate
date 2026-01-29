@@ -2,9 +2,10 @@ package runner
 
 import (
 	"fmt"
+	"path/filepath"
 
-	"mailmate/internal/app"
 	"mailmate/internal/mailer"
+	"mailmate/internal/models"
 	"mailmate/internal/templates"
 	"mailmate/internal/tui"
 )
@@ -16,7 +17,7 @@ import (
 // 4. Collect user input
 // 5. Render template
 // 6. Send draft (via Outlook)
-func Run(sender mailer.EmailSender, options app.Options) error {
+func Run(sender mailer.EmailSender, options models.Options) error {
 	// 1. Scan templates
 	// Assuming "templates" directory is in the current working directory
 	tmpls, err := templates.ScanTemplates("templates")
@@ -42,6 +43,23 @@ func Run(sender mailer.EmailSender, options app.Options) error {
 		return fmt.Errorf("collecting input: %w", err)
 	}
 
+	// Handle attachments
+	var attachments []string
+	for _, v := range vars {
+		for _, f := range v.Filters {
+			if f.Name == "type" && f.Arg == "filepath" {
+				fullPath, ok := input.Values[v.Name]
+				if ok && fullPath != "" {
+					absPath, err := filepath.Abs(fullPath)
+					if err != nil {
+						return fmt.Errorf("resolving absolute path for %s: %w", fullPath, err)
+					}
+					attachments = append(attachments, absPath)
+				}
+			}
+		}
+	}
+
 	// 5. Render template
 	rendered, err := templates.RenderTemplate(selected.Path, input.Values)
 	if err != nil {
@@ -52,12 +70,13 @@ func Run(sender mailer.EmailSender, options app.Options) error {
 	// if !options.NoPreview { ... }
 
 	// 6. Send draft
-	draft := app.DraftEmail{
-		To:       options.To,
-		Cc:       options.Cc,
-		Bcc:      options.Bcc,
-		Subject:  rendered.Subject,
-		HTMLBody: rendered.HTML,
+	draft := models.DraftEmail{
+		To:          options.To,
+		Cc:          options.Cc,
+		Bcc:         options.Bcc,
+		Subject:     rendered.Subject,
+		HTMLBody:    rendered.HTML,
+		Attachments: attachments,
 	}
 
 	if err := sender.Send(draft); err != nil {
