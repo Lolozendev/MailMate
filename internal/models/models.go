@@ -64,6 +64,8 @@ type Options struct {
 	To string
 	// Cc is the default carbon copy recipient email address from flags.
 	Cc string
-	// Bcc is the default blind carbon copy recipient email address from flags.
+	// Bcc is the blind carbon copy recipient email address from flags.
 	Bcc string
+	// KV is the key-value pairs string to skip TUI form input.
+	KV string
 }
