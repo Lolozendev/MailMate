@@ -13,6 +13,7 @@ import (
 func main() {
 	// Parse CLI flags
 	noPreview := flag.Bool("no-preview", false, "Skip the HTML preview step and open Outlook directly")
+	template := flag.String("template", "", "Template path (skip TUI selection)")
 	to := flag.String("to", "", "Recipient email address")
 	cc := flag.String("cc", "", "Carbon copy recipient email address")
 	bcc := flag.String("bcc", "", "Blind carbon copy recipient email address")
@@ -20,6 +21,7 @@ func main() {
 
 	options := models.Options{
 		NoPreview: *noPreview,
+		Template:  *template,
 		To:        *to,
 		Cc:        *cc,
 		Bcc:       *bcc,
