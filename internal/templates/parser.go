@@ -15,6 +15,10 @@ import (
 type ParsedTemplateFile struct {
 	Subject string
 	Body    string
+	// Default recipients from template frontmatter
+	To  string
+	Cc  string
+	Bcc string
 }
 
 // ParseTemplateFile reads a template file, extracts the frontmatter (if any),
@@ -67,6 +71,9 @@ func ParseTemplateFile(path string) (*ParsedTemplateFile, error) {
 
 	var meta struct {
 		Subject string `yaml:"subject"`
+		To      string `yaml:"to"`
+		Cc      string `yaml:"cc"`
+		Bcc     string `yaml:"bcc"`
 	}
 	if err := yaml.Unmarshal(yamlData, &meta); err != nil {
 		return nil, fmt.Errorf("parsing frontmatter yaml: %w", err)
@@ -75,6 +82,9 @@ func ParseTemplateFile(path string) (*ParsedTemplateFile, error) {
 	return &ParsedTemplateFile{
 		Subject: meta.Subject,
 		Body:    string(content[bodyStart:]),
+		To:      meta.To,
+		Cc:      meta.Cc,
+		Bcc:     meta.Bcc,
 	}, nil
 }
 
@@ -86,8 +96,8 @@ func ParseTemplate(path string) ([]models.TemplateVariable, error) {
 		return nil, err
 	}
 
-	// Combine subject and body for variable scanning
-	combined := parsed.Subject + "\n" + parsed.Body
+	// Combine subject, recipients, and body for variable scanning
+	combined := parsed.Subject + "\n" + parsed.To + "\n" + parsed.Cc + "\n" + parsed.Bcc + "\n" + parsed.Body
 
 	// Regex to find {{ VariableName | filters... }}
 	// Captures:

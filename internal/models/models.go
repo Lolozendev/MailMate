@@ -36,6 +36,12 @@ type RenderedTemplate struct {
 	Subject string
 	// HTML is the final HTML string to be used as the email body.
 	HTML string
+	// To is the rendered recipient email address from template.
+	To string
+	// Cc is the rendered carbon copy recipient email address from template.
+	Cc string
+	// Bcc is the rendered blind carbon copy recipient email address from template.
+	Bcc string
 }
 
 // DraftEmail represents the email draft command to be sent to the sender.
