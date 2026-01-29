@@ -66,6 +66,8 @@ type Options struct {
 	Cc string
 	// Bcc is the blind carbon copy recipient email address from flags.
 	Bcc string
-	// KV is the key-value pairs string to skip TUI form input.
-	KV string
+	// KV is a pointer to the key-value pairs string. If nil, the flag was not provided.
+	// If non-nil but empty string, the flag was provided but empty (show required variables).
+	// If non-nil with content, parse and use the values.
+	KV *string
 }

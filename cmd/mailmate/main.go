@@ -20,13 +20,22 @@ func main() {
 	kv := flag.String("kv", "", "Key-value pairs for template variables (key1='value';key2='value2')")
 	flag.Parse()
 
+	// Check if --kv flag was explicitly provided
+	var kvPtr *string
+	for _, arg := range os.Args[1:] {
+		if arg == "--kv" || arg == "-kv" {
+			kvPtr = kv
+			break
+		}
+	}
+
 	options := models.Options{
 		NoPreview: *noPreview,
 		Template:  *template,
 		To:        *to,
 		Cc:        *cc,
 		Bcc:       *bcc,
-		KV:        *kv,
+		KV:        kvPtr,
 	}
 
 	// Initialize dependencies
