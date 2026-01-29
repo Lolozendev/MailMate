@@ -1,7 +1,5 @@
 # Guide : Ajouter un nouveau type de validation
 
-Grâce à la centralisation de la logique de validation dans `validator.ApplyFilters()`, l'ajout d'un nouveau type ne nécessite des modifications que dans **UN SEUL fichier**.
-
 ## Exemple : Ajouter un type `email`
 
 ### Étape 1 : Ajouter la fonction de validation de base
@@ -94,17 +92,3 @@ subject: Confirmation pour {{ Email | type:'email' }}
 ```bash
 ./mailmate --template templates/contact.html --kv "Email='john@example.com'"
 ```
-
-## Avant la centralisation ❌
-
-Il fallait modifier **3 endroits** :
-1. `internal/validator/validator.go` - Créer ValidateEmail()
-2. `internal/tui/form.go` - Ajouter le switch case
-3. `internal/kv/validator.go` - Ajouter le switch case (duplication!)
-
-## Après la centralisation ✅
-
-Il suffit de modifier **1 endroit** :
-1. `internal/validator/validator.go` - Créer ValidateEmail() + ajouter dans ApplyFilters()
-
-La fonction `ApplyFilters()` est automatiquement utilisée partout !
