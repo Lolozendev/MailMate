@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"mailmate/internal/kv"
@@ -10,6 +11,16 @@ import (
 	"mailmate/internal/templates"
 	"mailmate/internal/tui"
 )
+
+// getTemplatesDir returns the templates directory path.
+// It first checks the MAILMATE_TEMPLATES_DIR environment variable.
+// If not set, it defaults to "templates".
+func getTemplatesDir() string {
+	if dir := os.Getenv("MAILMATE_TEMPLATES_DIR"); dir != "" {
+		return dir
+	}
+	return "templates"
+}
 
 // displayRequiredVariables prints the list of required template variables
 func displayRequiredVariables(vars []models.TemplateVariable) {
@@ -46,8 +57,8 @@ func displayRequiredVariables(vars []models.TemplateVariable) {
 // 6. Send draft (via Outlook)
 func Run(sender mailer.EmailSender, options models.Options) error {
 	// 1. Scan templates
-	// Assuming "templates" directory is in the current working directory
-	tmpls, err := templates.ScanTemplates("templates")
+	templatesDir := getTemplatesDir()
+	tmpls, err := templates.ScanTemplates(templatesDir)
 	if err != nil {
 		return fmt.Errorf("scanning templates: %w", err)
 	}
