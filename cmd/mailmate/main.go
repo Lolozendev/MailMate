@@ -12,11 +12,30 @@ import (
 )
 
 func main() {
-	// Pre-process args to handle --kv without value
-	// If --kv is present without a value, insert an empty string
+	// Pre-process args to handle --template and --kv without values
+	var templateExplicitlyProvided bool
 	var kvExplicitlyProvided bool
+	
 	for i := 1; i < len(os.Args); i++ {
-		if os.Args[i] == "--kv" || os.Args[i] == "-kv" {
+		arg := os.Args[i]
+		
+		// Handle --template
+		if arg == "--template" || arg == "-template" {
+			templateExplicitlyProvided = true
+			// Check if next arg exists and doesn't start with "-"
+			if i+1 >= len(os.Args) || strings.HasPrefix(os.Args[i+1], "-") {
+				// No value provided, insert empty string
+				args := make([]string, 0, len(os.Args)+1)
+				args = append(args, os.Args[:i+1]...)
+				args = append(args, "")
+				args = append(args, os.Args[i+1:]...)
+				os.Args = args
+				i++ // Skip the inserted empty string
+			}
+		}
+		
+		// Handle --kv
+		if arg == "--kv" || arg == "-kv" {
 			kvExplicitlyProvided = true
 			// Check if next arg exists and doesn't start with "-"
 			if i+1 >= len(os.Args) || strings.HasPrefix(os.Args[i+1], "-") {
@@ -26,8 +45,8 @@ func main() {
 				args = append(args, "")
 				args = append(args, os.Args[i+1:]...)
 				os.Args = args
+				i++ // Skip the inserted empty string
 			}
-			break
 		}
 	}
 
@@ -40,7 +59,12 @@ func main() {
 	kv := flag.String("kv", "", "Key-value pairs for template variables (key1='value';key2='value2')")
 	flag.Parse()
 
-	// Determine if --kv flag was explicitly provided
+	// Determine if flags were explicitly provided
+	var templatePtr *string
+	if templateExplicitlyProvided {
+		templatePtr = template
+	}
+	
 	var kvPtr *string
 	if kvExplicitlyProvided {
 		kvPtr = kv
@@ -48,7 +72,7 @@ func main() {
 
 	options := models.Options{
 		NoPreview: *noPreview,
-		Template:  *template,
+		Template:  templatePtr,
 		To:        *to,
 		Cc:        *cc,
 		Bcc:       *bcc,

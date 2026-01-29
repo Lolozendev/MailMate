@@ -58,8 +58,10 @@ type DraftEmail struct {
 type Options struct {
 	// NoPreview indicates whether to skip the HTML preview step.
 	NoPreview bool
-	// Template is the template path specified via CLI flag (skip TUI selection).
-	Template string
+	// Template is a pointer to the template path. If nil, the flag was not provided (use TUI).
+	// If non-nil but empty string, the flag was provided but empty (list available templates).
+	// If non-nil with content, use the specified template path.
+	Template *string
 	// To is the default recipient email address from flags.
 	To string
 	// Cc is the default carbon copy recipient email address from flags.

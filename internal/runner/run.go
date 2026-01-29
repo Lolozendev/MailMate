@@ -54,10 +54,21 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 
 	// 2. Select template
 	var selected *models.TemplateRef
-	if options.Template != "" {
+	if options.Template != nil {
+		// --template flag was provided
+		if *options.Template == "" {
+			// --template flag provided but empty: list available templates and exit
+			fmt.Println("Available templates:")
+			for _, tmpl := range tmpls {
+				fmt.Printf("  - %s\n", tmpl.Path)
+			}
+			fmt.Println("\nUsage: --template <path>")
+			return nil
+		}
+		
 		// CLI template selection: find matching template by path
 		// Normalize paths for comparison (handles / vs \ on Windows)
-		normalizedInput := filepath.Clean(options.Template)
+		normalizedInput := filepath.Clean(*options.Template)
 		found := false
 		for i := range tmpls {
 			if filepath.Clean(tmpls[i].Path) == normalizedInput {
@@ -67,10 +78,10 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 			}
 		}
 		if !found {
-			return fmt.Errorf("template not found: %s", options.Template)
+			return fmt.Errorf("template not found: %s", *options.Template)
 		}
 	} else {
-		// TUI template selection
+		// --template flag not provided: use TUI template selection
 		selected, err = tui.SelectTemplate(tmpls)
 		if err != nil {
 			return fmt.Errorf("selecting template: %w", err)
