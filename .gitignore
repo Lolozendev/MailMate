@@ -24,5 +24,4 @@ Thumbs.db
 
 *.md
 !README.md
-
-templates/*.html
+templates/
