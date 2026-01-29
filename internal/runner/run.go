@@ -11,6 +11,32 @@ import (
 	"mailmate/internal/tui"
 )
 
+// displayRequiredVariables prints the list of required template variables
+func displayRequiredVariables(vars []models.TemplateVariable) {
+	fmt.Println("Template variables required:")
+	for _, v := range vars {
+		filterInfo := ""
+		if len(v.Filters) > 0 {
+			filterNames := make([]string, len(v.Filters))
+			for i, f := range v.Filters {
+				if f.Arg != "" {
+					filterNames[i] = fmt.Sprintf("%s:%s", f.Name, f.Arg)
+				} else {
+					filterNames[i] = f.Name
+				}
+			}
+			filterInfo = fmt.Sprintf(" (filters: %s)", filterNames[0])
+			if len(filterNames) > 1 {
+				for i := 1; i < len(filterNames); i++ {
+					filterInfo = filterInfo[:len(filterInfo)-1] + ", " + filterNames[i] + ")"
+				}
+			}
+		}
+		fmt.Printf("  - %s%s\n", v.Name, filterInfo)
+	}
+	fmt.Println("\nUsage: --kv \"key1='value1';key2='value2'\"")
+}
+
 // Run executes the main application flow:
 // 1. Scan templates
 // 2. Select template
@@ -65,28 +91,7 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 		// Flag was provided - check if it's empty
 		if *options.KV == "" {
 			// --kv flag provided but empty: show required variables and exit
-			fmt.Println("Template variables required:")
-			for _, v := range vars {
-				filterInfo := ""
-				if len(v.Filters) > 0 {
-					filterNames := make([]string, len(v.Filters))
-					for i, f := range v.Filters {
-						if f.Arg != "" {
-							filterNames[i] = fmt.Sprintf("%s:%s", f.Name, f.Arg)
-						} else {
-							filterNames[i] = f.Name
-						}
-					}
-					filterInfo = fmt.Sprintf(" (filters: %s)", string(filterNames[0]))
-					if len(filterNames) > 1 {
-						for i := 1; i < len(filterNames); i++ {
-							filterInfo = filterInfo[:len(filterInfo)-1] + ", " + filterNames[i] + ")"
-						}
-					}
-				}
-				fmt.Printf("  - %s%s\n", v.Name, filterInfo)
-			}
-			fmt.Println("\nUsage: --kv \"key1='value1';key2='value2'\"")
+			displayRequiredVariables(vars)
 			return nil
 		}
 		
@@ -98,7 +103,9 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 
 		// Validate values against template variables
 		if err := kv.ValidateValues(kvValues, vars); err != nil {
-			return fmt.Errorf("validating key-value pairs: %w", err)
+			fmt.Printf("Error: %v\n\n", err)
+			displayRequiredVariables(vars)
+			return fmt.Errorf("validation failed")
 		}
 
 		input = &models.UserInput{

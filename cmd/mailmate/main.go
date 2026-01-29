@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"mailmate/internal/mailer/outlookole"
 	"mailmate/internal/models"
@@ -11,6 +12,25 @@ import (
 )
 
 func main() {
+	// Pre-process args to handle --kv without value
+	// If --kv is present without a value, insert an empty string
+	var kvExplicitlyProvided bool
+	for i := 1; i < len(os.Args); i++ {
+		if os.Args[i] == "--kv" || os.Args[i] == "-kv" {
+			kvExplicitlyProvided = true
+			// Check if next arg exists and doesn't start with "-"
+			if i+1 >= len(os.Args) || strings.HasPrefix(os.Args[i+1], "-") {
+				// No value provided, insert empty string
+				args := make([]string, 0, len(os.Args)+1)
+				args = append(args, os.Args[:i+1]...)
+				args = append(args, "")
+				args = append(args, os.Args[i+1:]...)
+				os.Args = args
+			}
+			break
+		}
+	}
+
 	// Parse CLI flags
 	noPreview := flag.Bool("no-preview", false, "Skip the HTML preview step and open Outlook directly")
 	template := flag.String("template", "", "Template path (skip TUI selection)")
@@ -20,13 +40,10 @@ func main() {
 	kv := flag.String("kv", "", "Key-value pairs for template variables (key1='value';key2='value2')")
 	flag.Parse()
 
-	// Check if --kv flag was explicitly provided
+	// Determine if --kv flag was explicitly provided
 	var kvPtr *string
-	for _, arg := range os.Args[1:] {
-		if arg == "--kv" || arg == "-kv" {
-			kvPtr = kv
-			break
-		}
+	if kvExplicitlyProvided {
+		kvPtr = kv
 	}
 
 	options := models.Options{
