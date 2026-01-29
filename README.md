@@ -87,7 +87,7 @@ Format des variables (`--kv`) :
 
 Les templates sont des fichiers `.html` dans `templates/`.
 
-Exemple :
+### Exemple basique :
 
 ```html
 ---
@@ -100,6 +100,32 @@ subject: Relance facture {{ InvoiceNumber }}
 </body>
 </html>
 ```
+
+### Nouveau : Destinataires par défaut
+
+Vous pouvez désormais définir des destinataires par défaut directement dans vos templates :
+
+```html
+---
+subject: "Relance facture {{ InvoiceNumber }}"
+to: "{{ ContactEmail }}"
+cc: "comptabilite@example.com"
+bcc: "archive@example.com"
+---
+<html>
+<body>
+  <p>Bonjour {{ ContactName }},</p>
+  <p>Votre facture {{ InvoiceNumber }} est en attente...</p>
+</body>
+</html>
+```
+
+**Avantages :**
+- ✅ Les destinataires sont automatiquement pré-remplis
+- ✅ Support des variables dynamiques (ex: `{{ ContactEmail }}`)
+- ✅ Les flags CLI `--to`, `--cc`, `--bcc` peuvent toujours les remplacer
+
+**Priorité :** Template (défaut) < Flags CLI (override)
 
 Guide complet : **[templates/README.md](./templates/README.md)**
 
@@ -139,7 +165,7 @@ Si vous voulez compiler vous-même :
 - Go **1.21+**
 
 ```bash
-git clone https://github.com/votre-repo/mailmate.git
+git clone https://github.com/Lolozendev/MailMate.git
 go mod download
 ```
 

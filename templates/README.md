@@ -5,7 +5,7 @@ Créez vos propres modèles d'emails pour standardiser vos communications. Les t
 ## Structure d'un Template
 
 Un fichier template (`.html`) se compose de deux parties :
-1. **L'En-tête (Frontmatter)** : Pour définir le sujet de l'email.
+1. **L'En-tête (Frontmatter)** : Pour définir le sujet, les destinataires par défaut, etc.
 2. **Le Corps** : Le contenu HTML de l'email.
 
 ### Exemple Complet
@@ -13,6 +13,8 @@ Un fichier template (`.html`) se compose de deux parties :
 ```html
 ---
 subject: Invitation pour {{ RecipientName }}
+to: "{{ RecipientEmail }}"
+cc: "manager@example.com"
 ---
 <html>
 <body>
@@ -28,6 +30,61 @@ subject: Invitation pour {{ RecipientName }}
 </body>
 </html>
 ```
+
+## 📧 Destinataires par Défaut (Nouveau !)
+
+Vous pouvez maintenant définir des destinataires par défaut directement dans le frontmatter du template :
+
+```yaml
+---
+subject: "Relance facture {{ InvoiceNumber }}"
+to: "{{ ContactEmail }}"
+cc: "comptabilite@example.com"
+bcc: "archive@example.com"
+---
+```
+
+### Champs Disponibles
+
+- **`to`** : Destinataire principal
+- **`cc`** : Copie (Carbon Copy)
+- **`bcc`** : Copie cachée (Blind Carbon Copy)
+
+### Avantages
+
+- ✅ **Automatisation** : Les emails récurrents ont leurs destinataires pré-remplis
+- ✅ **Variables dynamiques** : Vous pouvez utiliser des variables (ex: `{{ ContactEmail }}`)
+- ✅ **Texte statique** : Ou définir des emails fixes (ex: `comptabilite@example.com`)
+- ✅ **Flexible** : Les flags CLI `--to`, `--cc`, `--bcc` peuvent toujours remplacer ces valeurs
+
+### Ordre de Priorité
+
+```
+Template (par défaut) < Flags CLI (override)
+```
+
+Si vous définissez `to: "client@example.com"` dans le template mais utilisez `--to "autre@example.com"` en CLI, c'est la valeur CLI qui sera utilisée.
+
+### Exemple Complet
+
+```html
+---
+subject: "Relance facture {{ InvoiceNumber }}"
+to: "{{ ContactEmail }}"
+cc: "comptabilite@example.com"
+---
+<html>
+<body>
+    <p>Bonjour {{ ContactName }},</p>
+    <p>Votre facture {{ InvoiceNumber }} est en attente...</p>
+</body>
+</html>
+```
+
+Lors de l'utilisation :
+- Le formulaire demandera `ContactEmail`, `ContactName`, `InvoiceNumber`
+- Le destinataire principal sera automatiquement `{{ ContactEmail }}`
+- Une copie sera toujours envoyée à `comptabilite@example.com`
 
 ## 📝 Syntaxe des Variables
 
