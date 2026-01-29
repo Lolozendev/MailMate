@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"mailmate/internal/models"
 )
 
 // ValidateInt checks if the value represents a valid integer.
@@ -54,4 +56,35 @@ func ValidateFileExists(value string) error {
 // Useful for displaying just the filename in templates instead of full path.
 func GetFilename(value string) string {
 	return filepath.Base(value)
+}
+
+// ApplyFilters validates a value against template filters.
+// This centralizes all validation logic in one place, making it easy to add new types.
+func ApplyFilters(value string, filters []models.TemplateFilter) error {
+	// Check if value is required (non-empty)
+	if strings.TrimSpace(value) == "" {
+		return fmt.Errorf("value is required")
+	}
+
+	// Apply filter-based validation
+	for _, f := range filters {
+		switch f.Name {
+		case "int":
+			if _, err := ValidateInt(value); err != nil {
+				return fmt.Errorf("must be an integer")
+			}
+		case "type":
+			switch f.Arg {
+			case "date":
+				if _, err := ValidateDate(value); err != nil {
+					return fmt.Errorf("must be a date (DD-MM-YYYY)")
+				}
+			case "filepath":
+				if err := ValidateFileExists(value); err != nil {
+					return fmt.Errorf("file does not exist")
+				}
+			}
+		}
+	}
+	return nil
 }

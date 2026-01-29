@@ -33,35 +33,11 @@ func ValidateValues(kvValues map[string]string, variables []models.TemplateVaria
 			return fmt.Errorf("variable %s is required", v.Name)
 		}
 
-		// Apply filter-based validation
-		if err := validateWithFilters(value, v.Filters, v.Name); err != nil {
-			return err
+		// Apply filter-based validation using centralized validator
+		if err := validator.ApplyFilters(value, v.Filters); err != nil {
+			return fmt.Errorf("variable %s: %w", v.Name, err)
 		}
 	}
 
-	return nil
-}
-
-// validateWithFilters applies validation based on template filters
-func validateWithFilters(value string, filters []models.TemplateFilter, varName string) error {
-	for _, f := range filters {
-		switch f.Name {
-		case "int":
-			if _, err := validator.ValidateInt(value); err != nil {
-				return fmt.Errorf("variable %s: %w", varName, err)
-			}
-		case "type":
-			switch f.Arg {
-			case "date":
-				if _, err := validator.ValidateDate(value); err != nil {
-					return fmt.Errorf("variable %s: %w", varName, err)
-				}
-			case "filepath":
-				if err := validator.ValidateFileExists(value); err != nil {
-					return fmt.Errorf("variable %s: %w", varName, err)
-				}
-			}
-		}
-	}
 	return nil
 }

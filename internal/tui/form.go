@@ -2,7 +2,6 @@ package tui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/huh"
 
@@ -64,32 +63,7 @@ func CollectUserInput(variables []models.TemplateVariable) (*models.UserInput, e
 // createValidator returns a validation function based on the provided filters.
 func createValidator(filters []models.TemplateFilter) func(string) error {
 	return func(str string) error {
-		// Required check (variables are implicitly required for now unless we add an optional filter later)
-		if strings.TrimSpace(str) == "" {
-			return fmt.Errorf("value is required")
-		}
-
-		for _, f := range filters {
-			switch f.Name {
-			case "int":
-				if _, err := validator.ValidateInt(str); err != nil {
-					return fmt.Errorf("must be an integer")
-				}
-			case "type":
-				switch f.Arg {
-				case "date":
-					// validate YYYY-MM-DD
-					if _, err := validator.ValidateDate(str); err != nil {
-						return fmt.Errorf("must be a date (DD-MM-YYYY)")
-					}
-				case "filepath":
-					if err := validator.ValidateFileExists(str); err != nil {
-						return fmt.Errorf("file does not exist")
-					}
-				}
-			}
-		}
-		return nil
+		return validator.ApplyFilters(str, filters)
 	}
 }
 
