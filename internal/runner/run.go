@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"mailmate/internal/kv"
 	"mailmate/internal/mailer"
 	"mailmate/internal/models"
 	"mailmate/internal/templates"
@@ -55,9 +56,28 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 	}
 
 	// 4. Collect user input
-	input, err := tui.CollectUserInput(vars)
-	if err != nil {
-		return fmt.Errorf("collecting input: %w", err)
+	var input *models.UserInput
+	if options.KV != "" {
+		// Parse key-value pairs from CLI
+		kvValues, err := kv.Parse(options.KV)
+		if err != nil {
+			return fmt.Errorf("parsing key-value pairs: %w", err)
+		}
+
+		// Validate values against template variables
+		if err := kv.ValidateValues(kvValues, vars); err != nil {
+			return fmt.Errorf("validating key-value pairs: %w", err)
+		}
+
+		input = &models.UserInput{
+			Values: kvValues,
+		}
+	} else {
+		// Use TUI to collect input
+		input, err = tui.CollectUserInput(vars)
+		if err != nil {
+			return fmt.Errorf("collecting input: %w", err)
+		}
 	}
 
 	// Handle attachments
