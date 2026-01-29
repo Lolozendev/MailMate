@@ -167,11 +167,27 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 	// TODO: T019 - Implement preview screen here
 	// if !options.NoPreview { ... }
 
-	// 6. Send draft
+	// 6. Prepare recipients with priority: CLI flags override template defaults
+	to := rendered.To
+	if options.To != "" {
+		to = options.To
+	}
+	
+	cc := rendered.Cc
+	if options.Cc != "" {
+		cc = options.Cc
+	}
+	
+	bcc := rendered.Bcc
+	if options.Bcc != "" {
+		bcc = options.Bcc
+	}
+
+	// 7. Send draft
 	draft := models.DraftEmail{
-		To:          options.To,
-		Cc:          options.Cc,
-		Bcc:         options.Bcc,
+		To:          to,
+		Cc:          cc,
+		Bcc:         bcc,
 		Subject:     rendered.Subject,
 		HTMLBody:    rendered.HTML,
 		Attachments: attachments,
