@@ -6,12 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"mailmate/internal/app"
+	"mailmate/internal/models"
 )
 
 // ScanTemplates searches for .html files in the specified directory.
 // It returns a list of found templates or an error if the directory is missing or empty.
-func ScanTemplates(dir string) ([]app.TemplateRef, error) {
+func ScanTemplates(dir string) ([]models.TemplateRef, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -20,10 +20,10 @@ func ScanTemplates(dir string) ([]app.TemplateRef, error) {
 		return nil, fmt.Errorf("failed to read templates directory: %w", err)
 	}
 
-	var templates []app.TemplateRef
+	var templates []models.TemplateRef
 	for _, entry := range entries {
 		if !entry.IsDir() && strings.HasSuffix(strings.ToLower(entry.Name()), ".html") {
-			templates = append(templates, app.TemplateRef{
+			templates = append(templates, models.TemplateRef{
 				Name: entry.Name(),
 				Path: filepath.Join(dir, entry.Name()),
 			})

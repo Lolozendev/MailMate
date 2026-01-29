@@ -6,12 +6,12 @@ import (
 
 	"github.com/charmbracelet/huh"
 
-	"mailmate/internal/app"
+	"mailmate/internal/models"
 )
 
 // SelectTemplate prompts the user to select a template from the provided list.
 // It returns the selected TemplateRef or an error if selection fails/is cancelled.
-func SelectTemplate(templates []app.TemplateRef) (*app.TemplateRef, error) {
+func SelectTemplate(templates []models.TemplateRef) (*models.TemplateRef, error) {
 	if len(templates) == 0 {
 		return nil, errors.New("no templates available to select")
 	}
@@ -21,7 +21,7 @@ func SelectTemplate(templates []app.TemplateRef) (*app.TemplateRef, error) {
 	// Map to look up the full struct by Name (since Select returns the value, which we'll use as the Name for uniqueness)
 	// Alternatively, we can use the Path as the value. Let's use Path as value to be safe if names collide (though scanner should handle that).
 	// But to return the original struct, a map is easy.
-	templateMap := make(map[string]app.TemplateRef)
+	templateMap := make(map[string]models.TemplateRef)
 
 	for i, tmpl := range templates {
 		options[i] = huh.NewOption(tmpl.Name, tmpl.Path)

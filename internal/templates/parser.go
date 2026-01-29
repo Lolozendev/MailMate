@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v3"
-	"mailmate/internal/app"
+	"mailmate/internal/models"
 )
 
 // ParsedTemplateFile represents the separated subject and body from a template file.
@@ -80,7 +80,7 @@ func ParseTemplateFile(path string) (*ParsedTemplateFile, error) {
 
 // ParseTemplate reads a template file and extracts variables and their filters.
 // It parses both the frontmatter Subject and the Body.
-func ParseTemplate(path string) ([]app.TemplateVariable, error) {
+func ParseTemplate(path string) ([]models.TemplateVariable, error) {
 	parsed, err := ParseTemplateFile(path)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func ParseTemplate(path string) ([]app.TemplateVariable, error) {
 
 	matches := varRegex.FindAllStringSubmatch(combined, -1)
 
-	var variables []app.TemplateVariable
+	var variables []models.TemplateVariable
 	seen := make(map[string]bool)
 
 	for _, match := range matches {
@@ -109,7 +109,7 @@ func ParseTemplate(path string) ([]app.TemplateVariable, error) {
 		}
 		seen[name] = true
 
-		tv := app.TemplateVariable{
+		tv := models.TemplateVariable{
 			Name: name,
 		}
 
@@ -125,8 +125,8 @@ func ParseTemplate(path string) ([]app.TemplateVariable, error) {
 }
 
 // parseFilters extracts filters from a string like "| type:'date' | default:'now'"
-func parseFilters(raw string) []app.TemplateFilter {
-	var filters []app.TemplateFilter
+func parseFilters(raw string) []models.TemplateFilter {
+	var filters []models.TemplateFilter
 
 	// Regex matches: | name (: arg)?
 	// Captures:
@@ -150,7 +150,7 @@ func parseFilters(raw string) []app.TemplateFilter {
 			fArg = m[4]
 		}
 
-		filters = append(filters, app.TemplateFilter{
+		filters = append(filters, models.TemplateFilter{
 			Name: fName,
 			Arg:  fArg,
 		})

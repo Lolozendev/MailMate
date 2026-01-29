@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"mailmate/internal/app"
 	"mailmate/internal/mailer/outlookole"
+	"mailmate/internal/models"
 	"mailmate/internal/runner"
 )
 
@@ -18,7 +18,7 @@ func main() {
 	bcc := flag.String("bcc", "", "Blind carbon copy recipient email address")
 	flag.Parse()
 
-	options := app.Options{
+	options := models.Options{
 		NoPreview: *noPreview,
 		To:        *to,
 		Cc:        *cc,

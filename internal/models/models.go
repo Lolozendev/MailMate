@@ -1,4 +1,4 @@
-package app
+package models
 
 // TemplateRef represents a template file found in the templates directory.
 type TemplateRef struct {
@@ -50,6 +50,8 @@ type DraftEmail struct {
 	Subject string
 	// HTMLBody is the HTML content of the email.
 	HTMLBody string
+	// Attachments is a list of file paths to attach to the email.
+	Attachments []string
 }
 
 // Options represents the application configuration options.
