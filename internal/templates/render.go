@@ -13,11 +13,15 @@ import (
 func init() {
 	// Register the "type" filter.
 	// Usage: {{ Variable | type:"date" }}
-	pongo2.RegisterFilter("type", filterType)
+	if err := pongo2.RegisterFilter("type", filterType); err != nil {
+		panic(fmt.Errorf(`failed to register pongo2 filter %q: %w`, "type", err))
+	}
 
 	// Register the "int" filter.
 	// Usage: {{ Variable | int }}
-	pongo2.RegisterFilter("int", filterInt)
+	if err := pongo2.RegisterFilter("int", filterInt); err != nil {
+		panic(fmt.Errorf(`failed to register pongo2 filter %q: %w`, "int", err))
+	}
 }
 
 // filterType implements the "type" filter which validates/formats values based on the argument.
@@ -63,9 +67,9 @@ func filterInt(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Er
 // passthroughFilter implements a pass-through filter that returns the input value unchanged.
 // This is useful when a filter definition is needed for the TUI (to trigger specific form behaviors)
 // but no transformation is required during the actual template rendering.
-func passthroughFilter(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+/* func passthroughFilter(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 	return pongo2.AsValue(in), nil
-}
+} */
 
 // RenderTemplate renders the template at the given path using the provided variables.
 func RenderTemplate(tmplPath string, variables map[string]string) (*models.RenderedTemplate, error) {
