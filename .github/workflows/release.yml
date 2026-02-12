@@ -1,0 +1,61 @@
+name: Release (Windows)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-windows:
+    name: Build Windows amd64 + Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go (from go.mod)
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build mailmate.exe (windows/amd64)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force dist | Out-Null
+          $env:GOOS = "windows"
+          $env:GOARCH = "amd64"
+          go build -trimpath -ldflags "-s -w" -o dist\mailmate.exe .\cmd\mailmate
+
+      - name: Create zip
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $zipName = "MailMate_windows_amd64.zip"
+          if (Test-Path $zipName) { Remove-Item -Force $zipName }
+          Compress-Archive -Path dist\mailmate.exe -DestinationPath $zipName
+
+      - name: Create sha256
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $zipName = "MailMate_windows_amd64.zip"
+          $hash = (Get-FileHash -Algorithm SHA256 $zipName).Hash.ToLower()
+          "$hash  $zipName" | Out-File -Encoding ascii "MailMate_windows_amd64.zip.sha256"
+
+      - name: Create GitHub Release (auto notes) + upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            MailMate_windows_amd64.zip
+            MailMate_windows_amd64.zip.sha256
