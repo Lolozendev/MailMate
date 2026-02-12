@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify (fmt / vet / test / lint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go (from go.mod)
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: gofmt (fail if diff)
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=$(gofmt -l .)
+
+          if [ -n "$files" ]; then
+            {
+              echo "## gofmt"
+              echo ""
+              echo "gofmt requis sur :"
+              echo ""
+              echo '```'
+              echo "$files"
+              echo '```'
+              echo ""
+              echo "Commande : \`gofmt -w .\`"
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo "gofmt needed on:"
+            echo "$files"
+            echo ""
+            echo "Run: gofmt -w ."
+            exit 1
+          else
+            {
+              echo "## gofmt"
+              echo ""
+              echo "OK (aucun fichier à reformater)"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: go test
+        run: go test ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.4.0
+          args: --timeout=5m

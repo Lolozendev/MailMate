@@ -52,27 +52,37 @@ func (s *OutlookSender) Send(draft models.DraftEmail) error {
 
 	// Set email properties
 	if draft.To != "" {
-		oleutil.PutProperty(mailItem, "To", draft.To)
+		if _, err := oleutil.PutProperty(mailItem, "To", draft.To); err != nil {
+			return fmt.Errorf("failed to set mail property %q: %w", "To", err)
+		}
 	}
 	if draft.Cc != "" {
-		oleutil.PutProperty(mailItem, "CC", draft.Cc)
+		if _, err := oleutil.PutProperty(mailItem, "CC", draft.Cc); err != nil {
+			return fmt.Errorf("failed to set mail property %q: %w", "CC", err)
+		}
 	}
 	if draft.Bcc != "" {
-		oleutil.PutProperty(mailItem, "BCC", draft.Bcc)
+		if _, err := oleutil.PutProperty(mailItem, "BCC", draft.Bcc); err != nil {
+			return fmt.Errorf("failed to set mail property %q: %w", "BCC", err)
+		}
 	}
 
-	oleutil.PutProperty(mailItem, "Subject", draft.Subject)
-	oleutil.PutProperty(mailItem, "HTMLBody", draft.HTMLBody)
+	if _, err := oleutil.PutProperty(mailItem, "Subject", draft.Subject); err != nil {
+		return fmt.Errorf("failed to set mail property %q: %w", "Subject", err)
+	}
+	if _, err := oleutil.PutProperty(mailItem, "HTMLBody", draft.HTMLBody); err != nil {
+		return fmt.Errorf("failed to set mail property %q: %w", "HTMLBody", err)
+	}
 
 	// Add attachments
 	if len(draft.Attachments) > 0 {
 		attachments := oleutil.MustGetProperty(mailItem, "Attachments").ToIDispatch()
-		// No need to release attachments IDispatch as it is managed by the parent object? 
+		// No need to release attachments IDispatch as it is managed by the parent object?
 		// Actually it's better to be safe, but MustGetProperty might not return an owned reference in the same way.
 		// Let's stick to standard oleutil usage.
-		// However, Go-OLE docs/examples often show direct method calls on the item for simple properties, 
+		// However, Go-OLE docs/examples often show direct method calls on the item for simple properties,
 		// but Attachments is a collection.
-		
+
 		for _, path := range draft.Attachments {
 			// Attachments.Add(Source, Type, Position, DisplayName)
 			// Source is required. Others are optional.

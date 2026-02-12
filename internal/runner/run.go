@@ -76,7 +76,7 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 			fmt.Println("\nUsage: --template <path>")
 			return nil
 		}
-		
+
 		// CLI template selection: find matching template by path
 		// Normalize paths for comparison (handles / vs \ on Windows)
 		normalizedInput := filepath.Clean(*options.Template)
@@ -107,7 +107,7 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 
 	// 4. Collect user input
 	var input *models.UserInput
-	
+
 	// Check if --kv flag was provided
 	if options.KV != nil {
 		// Flag was provided - check if it's empty
@@ -116,7 +116,7 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 			displayRequiredVariables(vars)
 			return nil
 		}
-		
+
 		// --kv flag provided with values: parse and use them
 		kvValues, err := kv.Parse(*options.KV)
 		if err != nil {
@@ -172,12 +172,12 @@ func Run(sender mailer.EmailSender, options models.Options) error {
 	if options.To != "" {
 		to = options.To
 	}
-	
+
 	cc := rendered.Cc
 	if options.Cc != "" {
 		cc = options.Cc
 	}
-	
+
 	bcc := rendered.Bcc
 	if options.Bcc != "" {
 		bcc = options.Bcc
