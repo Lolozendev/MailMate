@@ -52,17 +52,27 @@ func (s *OutlookSender) Send(draft models.DraftEmail) error {
 
 	// Set email properties
 	if draft.To != "" {
-		oleutil.PutProperty(mailItem, "To", draft.To)
+		if _, err := oleutil.PutProperty(mailItem, "To", draft.To); err != nil {
+			return fmt.Errorf("failed to set mail property %q: %w", "To", err)
+		}
 	}
 	if draft.Cc != "" {
-		oleutil.PutProperty(mailItem, "CC", draft.Cc)
+		if _, err := oleutil.PutProperty(mailItem, "CC", draft.Cc); err != nil {
+			return fmt.Errorf("failed to set mail property %q: %w", "CC", err)
+		}
 	}
 	if draft.Bcc != "" {
-		oleutil.PutProperty(mailItem, "BCC", draft.Bcc)
+		if _, err := oleutil.PutProperty(mailItem, "BCC", draft.Bcc); err != nil {
+			return fmt.Errorf("failed to set mail property %q: %w", "BCC", err)
+		}
 	}
 
-	oleutil.PutProperty(mailItem, "Subject", draft.Subject)
-	oleutil.PutProperty(mailItem, "HTMLBody", draft.HTMLBody)
+	if _, err := oleutil.PutProperty(mailItem, "Subject", draft.Subject); err != nil {
+		return fmt.Errorf("failed to set mail property %q: %w", "Subject", err)
+	}
+	if _, err := oleutil.PutProperty(mailItem, "HTMLBody", draft.HTMLBody); err != nil {
+		return fmt.Errorf("failed to set mail property %q: %w", "HTMLBody", err)
+	}
 
 	// Add attachments
 	if len(draft.Attachments) > 0 {
