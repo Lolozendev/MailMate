@@ -27,7 +27,7 @@ func ValidateValues(kvValues map[string]string, variables []models.TemplateVaria
 	// Validate each variable
 	for _, v := range variables {
 		value, exists := kvValues[v.Name]
-		
+
 		// Check if required variable is missing
 		if !exists || strings.TrimSpace(value) == "" {
 			return fmt.Errorf("variable %s is required", v.Name)

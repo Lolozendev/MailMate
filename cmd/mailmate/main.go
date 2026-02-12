@@ -15,10 +15,10 @@ func main() {
 	// Pre-process args to handle --template and --kv without values
 	var templateExplicitlyProvided bool
 	var kvExplicitlyProvided bool
-	
+
 	for i := 1; i < len(os.Args); i++ {
 		arg := os.Args[i]
-		
+
 		// Handle --template
 		if arg == "--template" || arg == "-template" {
 			templateExplicitlyProvided = true
@@ -33,7 +33,7 @@ func main() {
 				i++ // Skip the inserted empty string
 			}
 		}
-		
+
 		// Handle --kv
 		if arg == "--kv" || arg == "-kv" {
 			kvExplicitlyProvided = true
@@ -64,7 +64,7 @@ func main() {
 	if templateExplicitlyProvided {
 		templatePtr = template
 	}
-	
+
 	var kvPtr *string
 	if kvExplicitlyProvided {
 		kvPtr = kv

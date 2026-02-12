@@ -67,12 +67,12 @@ func (s *OutlookSender) Send(draft models.DraftEmail) error {
 	// Add attachments
 	if len(draft.Attachments) > 0 {
 		attachments := oleutil.MustGetProperty(mailItem, "Attachments").ToIDispatch()
-		// No need to release attachments IDispatch as it is managed by the parent object? 
+		// No need to release attachments IDispatch as it is managed by the parent object?
 		// Actually it's better to be safe, but MustGetProperty might not return an owned reference in the same way.
 		// Let's stick to standard oleutil usage.
-		// However, Go-OLE docs/examples often show direct method calls on the item for simple properties, 
+		// However, Go-OLE docs/examples often show direct method calls on the item for simple properties,
 		// but Attachments is a collection.
-		
+
 		for _, path := range draft.Attachments {
 			// Attachments.Add(Source, Type, Position, DisplayName)
 			// Source is required. Others are optional.
