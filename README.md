@@ -1,50 +1,62 @@
-# MailMate (Mail templating pour Outlook, sans prise de tête)
+# MailMate — Générateur de brouillons Outlook à partir de templates HTML
 
-MailMate aide à **rédiger plus vite des emails récurrents** (relances, invitations, confirmations…), à partir de **modèles**. 
-Vous choisissez un modèle, vous remplissez 2–3 champs, et MailMate ouvre **un brouillon dans Outlook**.
+MailMate permet de **générer rapidement des emails récurrents** (relances, invitations, confirmations…) à partir de **modèles**.  
+Vous choisissez un template, vous remplissez quelques champs, et MailMate ouvre **un brouillon dans Outlook**.
 
-- Rien n’est envoyé automatiquement : **vous relisez et cliquez sur “Envoyer” dans Outlook**.
-- Pensé pour un usage perso / équipe, sur **Windows + Outlook Desktop**.
-
----
-
-## À quoi ça sert ?
-
-- Relance de facture / paiement
-- Invitation / convocation
-- Compte-rendu / suivi
-- Messages “standard” qui changent juste sur quelques variables (nom, date, référence…)
+- Aucun envoi automatique : **vous relisez puis cliquez sur “Envoyer” dans Outlook**
+- Ciblé **Windows + Outlook Desktop** (usage perso / petite équipe)
 
 ---
 
-## Fonctionnement (simple)
+## Installation
 
-1. Vous lancez MailMate
-2. Vous choisissez un modèle
-3. Vous remplissez les champs demandés
-4. Outlook s’ouvre avec un **brouillon prêt**
+### Option 1 — Télécharger une release (recommandé)
+
+1. Allez sur la page **Releases** du dépôt GitHub
+2. Téléchargez `mailmate.exe` (ou l’archive) depuis les assets de la dernière version
+3. Placez l’exécutable où vous voulez (ex: `C:\Tools\MailMate\`)
+
+> Téléchargez l’exécutable depuis la page **GitHub Releases** (assets de la dernière version).
+
+### Option 2 — Compiler depuis les sources
+
+- Go **1.21+**
+
+```bash
+git clone https://github.com/Lolozendev/MailMate.git
+cd MailMate
+go mod download
+go build ./cmd/mailmate
+```
 
 ---
 
 ## Démarrage rapide
 
-### 1) Pré-requis
+### Pré-requis
 
 - **Windows**
 - **Outlook Desktop** installé et configuré
 
-### 2) Lancer
+### Lancer (mode interactif)
 
 ```powershell
-mailmate.exe
+.\mailmate.exe
 ```
 
-### 3) Résultat
-
-Une fenêtre Outlook s’ouvre avec :
-- le sujet déjà rempli
+Résultat : Outlook s’ouvre avec
+- le sujet rempli
 - le corps HTML rendu
-- (optionnel) les destinataires si vous les fournissez en CLI
+- (optionnel) les destinataires (voir templates et flags CLI)
+
+---
+
+## À quoi ça sert ?
+
+- Relances (facture / paiement / devis)
+- Invitations / convocations
+- Confirmations / suivi
+- Messages “standard” qui ne changent que sur quelques variables (nom, date, référence…)
 
 ---
 
@@ -52,27 +64,20 @@ Une fenêtre Outlook s’ouvre avec :
 
 ### Mode interactif (recommandé)
 
-Lancez simplement l’exécutable :
-
 ```powershell
-mailmate.exe
+.\mailmate.exe
 ```
 
-Puis : sélection du template → formulaire → validation → brouillon Outlook.
+Sélection du template → formulaire → validation → brouillon Outlook.
 
 ### Mode “scriptable” (optionnel)
 
-Si vous voulez automatiser depuis un script (CI perso, raccourci, PowerShell…), vous pouvez passer :
-- le template
-- les variables
-- (optionnel) les destinataires
-
 ```powershell
 # Exemple
-./mailmate.exe --template templates/invitation.html --kv \"Name='John Doe';Date='25-01-2026';Count=5\"
+.\mailmate.exe --template templates/invitation.html --kv "Name='John Doe';Date='25-01-2026';Count=5"
 
 # Avec destinataires
-./mailmate.exe --template templates/relance.html --kv \"ContactName='Marie';InvoiceNumber=12345;Date='20-01-2026'\" --to \"marie@example.com\"
+.\mailmate.exe --template templates/relance.html --kv "ContactName='Marie';InvoiceNumber=12345;Date='20-01-2026'" --to "marie@example.com"
 ```
 
 Format des variables (`--kv`) :
@@ -83,11 +88,11 @@ Format des variables (`--kv`) :
 
 ---
 
-## Créer vos modèles (templates)
+## Templates (créer / modifier)
 
 Les templates sont des fichiers `.html` dans `templates/`.
 
-### Exemple basique :
+### Exemple minimal
 
 ```html
 ---
@@ -101,9 +106,7 @@ subject: Relance facture {{ InvoiceNumber }}
 </html>
 ```
 
-### Nouveau : Destinataires par défaut
-
-Vous pouvez désormais définir des destinataires par défaut directement dans vos templates :
+### Destinataires par défaut (dans le template)
 
 ```html
 ---
@@ -120,12 +123,9 @@ bcc: "archive@example.com"
 </html>
 ```
 
-**Avantages :**
-- ✅ Les destinataires sont automatiquement pré-remplis
-- ✅ Support des variables dynamiques (ex: `{{ ContactEmail }}`)
-- ✅ Les flags CLI `--to`, `--cc`, `--bcc` peuvent toujours les remplacer
-
-**Priorité :** Template (défaut) < Flags CLI (override)
+- Les destinataires sont pré-remplis
+- Variables dynamiques supportées (ex: `{{ ContactEmail }}`)
+- Les flags CLI `--to`, `--cc`, `--bcc` restent prioritaires
 
 Guide complet : **[templates/README.md](./templates/README.md)**
 
@@ -146,30 +146,12 @@ Vous pouvez définir un emplacement permanent via la variable d'environnement `M
 **PowerShell (session courante uniquement)**
 
 ```powershell
-$env:MAILMATE_TEMPLATES_DIR = \"C:\\MesTemplates\"
+$env:MAILMATE_TEMPLATES_DIR = "C:\\MesTemplates"
 ```
 
 ---
 
 ## Limites / Notes
 
-- Projet orienté **Outlook Desktop** : pas de support “Outlook Web”.
-- L’ouverture du brouillon repose sur l’intégration Outlook locale : si Outlook n’est pas configuré, ça ne marchera pas.
-
----
-
-## Développeurs (build)
-
-Si vous voulez compiler vous-même :
-
-- Go **1.21+**
-
-```bash
-git clone https://github.com/Lolozendev/MailMate.git
-go mod download
-```
-
-
-> **Générez des emails standardisés en un éclair via Outlook, directement depuis votre terminal.**
-
-MailMate simplifie la création d'emails répétitifs. Sélectionnez un modèle, remplissez les informations demandées dans une interface interactive, et laissez l'outil préparer votre brouillon dans Outlook.
+- Outlook Web non supporté (Outlook Desktop uniquement)
+- L’ouverture du brouillon repose sur l’intégration Outlook locale : Outlook doit être configuré
